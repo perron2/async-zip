@@ -4,8 +4,4 @@
 .pub/
 
 pubspec.lock
-
 build/
-
-
-example
