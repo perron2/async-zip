@@ -8,13 +8,22 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 
 import 'common.dart';
+import 'isolate.dart';
 import 'zip.dart';
 
 const kDefaultCompressionLevel = 6;
 
+/// Writes data to a Zip archive.
 class ZipFileWriter {
   ZipHandle? _handle;
 
+  /// Creates a new Zip archive in the speficied file.
+  ///
+  /// The [compressionLevel] indicates how much an item in the archive will
+  /// be compressed. It ranges from 0 (no compression) to 9 (maximum
+  /// compression).
+  ///
+  /// Throws a [ZipException] if the file cannot be created.
   void create(File file, {int compressionLevel = kDefaultCompressionLevel}) {
     if (_handle != null) {
       throw ZipException('ZipFileWriter already created; call close() first');
@@ -22,6 +31,8 @@ class ZipFileWriter {
     _handle = _create(file, compressionLevel);
   }
 
+  /// Closes the writer. After closing no further write operations are
+  /// allowed. You can however call [create] again using a new file.
   void close() {
     if (_handle != null) {
       _close(_handle!);
@@ -29,24 +40,64 @@ class ZipFileWriter {
     _handle = null;
   }
 
+  /// Writes the data contained in the specified file as a Zip archive
+  /// entry [name].
+  ///
+  /// Compression can be disabled using the [compress] argument. This
+  /// can be useful for data that is already compressed such as a JPEG
+  /// image.
+  ///
+  /// Throws a [ZipException] if the operation fails.
   void writeFile(String name, File file, {bool compress = true}) =>
       _writeFile(_checkCreated(_handle), name, file, compress);
 
+  /// Writes the specified data as a Zip archive entry [name].
+  ///
+  /// Compression can be disabled using the [compress] argument. This
+  /// can be useful for data that is already compressed such as a JPEG
+  /// image.
+  ///
+  /// Throws a [ZipException] if the operation fails.
   void writeData(String name, Uint8List data, {bool compress = true}) =>
       _writeData(_checkCreated(_handle), name, data, compress);
 }
 
+/// Writes data to a Zip archive asynchronously.
 class ZipFileWriterAsync {
   final _manager = IsolateManager<_RequestType>(_zipWorker);
 
+  /// Creates a new Zip archive in the speficied file.
+  ///
+  /// The [compressionLevel] indicates how much an item in the archive will
+  /// be compressed. It ranges from 0 (no compression) to 9 (maximum
+  /// compression).
+  ///
+  /// Throws a [ZipException] if the file cannot be created.
   Future<void> create(File file, {int compressionLevel = kDefaultCompressionLevel}) =>
       _manager.sendRequest<void>(_RequestType.create, [file, compressionLevel]);
 
+  /// Closes the writer. After closing no further write operations are
+  /// allowed. You can however call [create] again using a new file.
   Future<void> close() => _manager.sendRequest<void>(_RequestType.close);
 
+  /// Writes the data contained in the specified file as a Zip archive
+  /// entry [name].
+  ///
+  /// Compression can be disabled using the [compress] argument. This
+  /// can be useful for data that is already compressed such as a JPEG
+  /// image.
+  ///
+  /// Throws a [ZipException] if the operation fails.
   Future<void> writeFile(String name, File file, {bool compress = true}) =>
       _manager.sendRequest<void>(_RequestType.writeFile, [name, file, compress]);
 
+  /// Writes the specified data as a Zip archive entry [name].
+  ///
+  /// Compression can be disabled using the [compress] argument. This
+  /// can be useful for data that is already compressed such as a JPEG
+  /// image.
+  ///
+  /// Throws a [ZipException] if the operation fails.
   Future<void> writeData(String name, Uint8List data, {bool compress = true}) =>
       _manager.sendRequest<void>(_RequestType.writeData, [name, data, compress]);
 

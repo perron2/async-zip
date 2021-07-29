@@ -1,7 +1,7 @@
 name: async_zip
 description: Asynchronous reading and writing of Zip files.
 version: 0.0.1
-homepage: http://perron2.ch
+homepage: https://github.com/perron2/async_zip
 
 environment:
   sdk: ">=2.13.0 <3.0.0"

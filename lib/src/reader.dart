@@ -8,11 +8,16 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 
 import 'common.dart';
+import 'isolate.dart';
 import 'zip.dart';
 
+/// Reads data from a Zip archive.
 class ZipFileReader {
   ZipHandle? _handle;
 
+  /// Opens the specified Zip archive for read access.
+  ///
+  /// Throws a [ZipException] if the file cannot be opened.
   void open(File file) {
     if (_handle != null) {
       throw ZipException('ZipFileReader already opened; call close() first');
@@ -20,6 +25,8 @@ class ZipFileReader {
     _handle = _open(file);
   }
 
+  /// Closes the reader. After closing no further read operations are
+  /// allowed. You can however [open] the reader again using a new file.
   void close() {
     if (_handle != null) {
       _close(_handle!);
@@ -27,25 +34,53 @@ class ZipFileReader {
     _handle = null;
   }
 
+  /// Returns a list of all items contained in the Zip archive.
+  ///
+  /// Throws a [ZipException] if the operation fails.
   Iterable<ZipEntry> entries() => _entries(_checkOpened(_handle));
 
+  /// Reads the entry specified by [name] and writes the unpacked data
+  /// to [file].
+  ///
+  /// Throws a [ZipException] if the operation fails.
   void readToFile(String name, File file) => _readToFile(_checkOpened(_handle), name, file);
 
+  /// Reads the entry specified by [name] and returns the unpached data
+  /// as a [Uint8List].
+  ///
+  /// Throws a [ZipException] if the operation fails.
   Uint8List read(String name) => _read(_checkOpened(_handle), name);
 }
 
+/// Reads data from a Zip archive asynchronously.
 class ZipFileReaderAsync {
   final _manager = IsolateManager<_RequestType>(_zipWorker);
 
+  /// Opens the specified Zip archive for read access.
+  ///
+  /// Throws a [ZipException] if the file cannot be opened.
   Future<void> open(File file) => _manager.sendRequest<void>(_RequestType.open, file);
 
+  /// Closes the reader. After closing no further read operations are
+  /// allowed. You can however [open] the reader again using a new file.
   Future<void> close() => _manager.sendRequest<void>(_RequestType.close);
 
+  /// Returns a list of all items contained in the Zip archive.
+  ///
+  /// Throws a [ZipException] if the operation fails.
   Future<List<ZipEntry>> entries() => _manager.sendRequest<List<ZipEntry>>(_RequestType.entries);
 
+  /// Reads the entry specified by [name] and writes the unpacked data
+  /// to [file].
+  ///
+  /// Throws a [ZipException] if the operation fails.
   Future<void> readToFile(String name, File file) =>
       _manager.sendRequest<void>(_RequestType.readToFile, [name, file]);
 
+  /// Reads the entry specified by [name] and returns the unpached data
+  /// as a [Uint8List].
+  ///
+  /// Throws a [ZipException] if the operation fails.
   Future<Uint8List> read(String name) => _manager.sendRequest<Uint8List>(_RequestType.read, name);
 
   static void _zipWorker(SendPort sendPort) async {
