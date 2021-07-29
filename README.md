@@ -8,19 +8,25 @@ low memory consumption.
 There is already a [standard archive library](https://pub.dev/packages/archive)
 for Dart. But the standard library has two major issues:
 - It cannot be used asynchronously
-- It reads Zip files completely to memory and unpacks them from there. This is an
-  issue when reading large Zip files on low or medium range devices.
+- It reads Zip files completely to memory and unpacks them from there. This is
+  an issue when reading large Zip files on low or medium range devices.
+
+Zip files can be read and written synchronously as well as asynchronously.
+Synchronous access may be faster in some situations. Choose whatever you need.
+
+Make sure to call `close()` in any case after having worked with a Zip file.
+You are leaking resources otherwise or risk ending up with an unfinished Zip
+file when working with `ZipFileWriter(Async)`.
+
 
 ## Reading Zip files
-
-Zip files can be read synchronously and asynchronously. Synchronous reading
-might be faster in some situations. Choose whatever you need.
 
 ### Reading data synchronously
 
 ```dart
+final reader = ZipFileReader();
 try {
-  final reader = ZipFileReader('path-to-archive.zip');
+  reader.open(File('path-to-archive.zip'));
   
   // Get all Zip entries
   final entries = reader.entries();
@@ -36,14 +42,17 @@ try {
 
 } on ZipException catch (ex) {
   print('Could not read Zip file: ${$ex.message}');
+} finally {
+  reader.close();
 }
 ```
 
 ### Reading data asynchronously
 
 ```dart
+final reader = ZipFileReaderAsync();
 try {
-  final reader = ZipFileReaderAsync('path-to-archive.zip');
+  reader.open(File('path-to-archive.zip'));
   
   // Get all Zip entries
   final entries = await reader.entries();
@@ -59,5 +68,59 @@ try {
 
 } on ZipException catch (ex) {
   print('Could not read Zip file: ${$ex.message}');
+} finally {
+  await reader.close();
 }
 ```
+
+## Writing Zip files
+
+### Writing data synchronously
+
+```dart
+final reader = ZipFileWriter();
+try {
+  reader.create(File('path-to-archive.zip'));
+
+  // Write a file to the Zip file
+  reader.writeFile('image.jpg', File('/somewhere/on/disk/image.jpg'));
+
+  // Write Uint8List data to the Zip file
+  Uint8List data = ...; // some binary data
+  reader.writeData('data.txt', data);
+
+} on ZipException catch (ex) {
+  print('Could not create Zip file: ${$ex.message}');
+} finally {
+  reader.close();
+}
+```
+
+### Write data asynchronously
+
+```dart
+final reader = ZipFileWriter();
+try {
+  await reader.create(File('path-to-archive.zip'));
+
+  // Write a file to the Zip file
+  await reader.writeFile('image.jpg', File('/somewhere/on/disk/image.jpg'));
+
+  // Write Uint8List data to the Zip file
+  Uint8List data = ...; // some binary data
+  await reader.writeData('data.txt', data);
+
+} on ZipException catch (ex) {
+  print('Could not create Zip file: ${$ex.message}');
+} finally {
+  await reader.close();
+}
+```
+
+## Internals
+
+This package uses the following C library for reading and writing:  
+https://github.com/kuba--/zip
+
+The library is integrated using Dart's
+[foreign function interface](https://dart.dev/guides/libraries/c-interop) (FFI).
