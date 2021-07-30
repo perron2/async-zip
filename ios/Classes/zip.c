@@ -778,7 +778,7 @@ static ssize_t zip_entries_delete_mark(struct zip_t *zip,
   return (ssize_t)deleted_entry_num;
 }
 
-struct zip_t *zip_open(const char *zipname, int level, char mode) {
+ZIP_EXPORT struct zip_t *zip_open(const char *zipname, int level, char mode) {
   struct zip_t *zip = NULL;
 
   if (!zipname || strlen(zipname) < 1) {

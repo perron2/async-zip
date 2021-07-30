@@ -25,7 +25,7 @@
 #define ZIP_EXPORT __declspec(dllimport)
 #endif
 #else
-#define ZIP_EXPORT __attribute__((visibility("default")))
+#define ZIP_EXPORT __attribute__((visibility("default"))) __attribute__((used))
 #endif
 #endif
 
@@ -46,6 +46,7 @@ typedef long ssize_t; /* byte count or error */
 #ifndef MAX_PATH
 #define MAX_PATH 32767 /* # chars in a path name including NULL */
 #endif
+#define ZIP_EXPORT __attribute__((visibility("default"))) __attribute__((used))
 
 /**
  * @mainpage

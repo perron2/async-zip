@@ -1,4 +1,6 @@
 .DS_Store
+.flutter-plugins
+.flutter-plugins-dependencies
 *.iml
 *.ipr
 *.iws

@@ -7,8 +7,7 @@ const ModeRead = 0x72;
 const ModeWrite = 0x77;
 const ModeAppend = 0x61;
 
-final DynamicLibrary zipLib =
-    Platform.isAndroid ? DynamicLibrary.open("libasync_zip.so") : DynamicLibrary.process();
+final DynamicLibrary zipLib = Platform.isAndroid ? DynamicLibrary.open("libasync_zip.so") : DynamicLibrary.process();
 
 typedef ZipHandle = Pointer<Void>;
 typedef CharPointer = Pointer<Utf8>;
@@ -33,11 +32,10 @@ typedef ZipSetLevel = int Function(ZipHandle, int);
 final zipSetLevel = zipLib.lookupFunction<ZipSetLevelNative, ZipSetLevel>('zip_set_level');
 
 // extern ZIP_EXPORT ssize_t zip_entries_total(struct zip_t *zip);
-typedef ZipEntriesTotalNative = Int32 Function(ZipHandle);
+typedef ZipEntriesTotalNative = Int64 Function(ZipHandle);
 typedef ZipEntriesTotal = int Function(ZipHandle);
 
-final zipEntriesTotal =
-    zipLib.lookupFunction<ZipEntriesTotalNative, ZipEntriesTotal>('zip_entries_total');
+final zipEntriesTotal = zipLib.lookupFunction<ZipEntriesTotalNative, ZipEntriesTotal>('zip_entries_total');
 
 // extern ZIP_EXPORT int zip_entry_openbyindex(struct zip_t *zip, int index);
 typedef ZipEntryOpenByIndexNative = Int32 Function(ZipHandle, Int32 index);
@@ -89,13 +87,13 @@ typedef ZipEntryFRead = int Function(ZipHandle, CharPointer);
 final zipEntryFRead = zipLib.lookupFunction<ZipEntryFReadNative, ZipEntryFRead>('zip_entry_fread');
 
 // extern ZIP_EXPORT ssize_t zip_entry_read(struct zip_t *zip, void **buf, size_t *bufsize);
-typedef ZipEntryReadNative = Int32 Function(ZipHandle, Pointer<DataPointer>, Pointer<Int32>);
-typedef ZipEntryRead = int Function(ZipHandle, Pointer<DataPointer>, Pointer<Int32>);
+typedef ZipEntryReadNative = IntPtr Function(ZipHandle, Pointer<DataPointer>, Pointer<IntPtr>);
+typedef ZipEntryRead = int Function(ZipHandle, Pointer<DataPointer>, Pointer<IntPtr>);
 
 final zipEntryRead = zipLib.lookupFunction<ZipEntryReadNative, ZipEntryRead>('zip_entry_read');
 
 // extern ZIP_EXPORT ssize_t zip_entry_noallocread(struct zip_t *zip, void *buf, size_t bufsize);
-typedef ZipEntryNoAllocReadNative = Int32 Function(ZipHandle, DataPointer, Int32);
+typedef ZipEntryNoAllocReadNative = IntPtr Function(ZipHandle, DataPointer, IntPtr);
 typedef ZipEntryNoAllocRead = int Function(ZipHandle, DataPointer, int);
 
 final zipEntryNoAllocRead =

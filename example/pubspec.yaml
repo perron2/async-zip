@@ -1,5 +1,6 @@
 name: async_zip_example
 description: Demonstrates how to use the async_zip plugin.
+version: 0.0.1+1
 publish_to: 'none'
 
 environment:

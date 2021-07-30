@@ -74,8 +74,7 @@ class ZipFileReaderAsync {
   /// to [file].
   ///
   /// Throws a [ZipException] if the operation fails.
-  Future<void> readToFile(String name, File file) =>
-      _manager.sendRequest<void>(_RequestType.readToFile, [name, file]);
+  Future<void> readToFile(String name, File file) => _manager.sendRequest<void>(_RequestType.readToFile, [name, file]);
 
   /// Reads the entry specified by [name] and returns the unpached data
   /// as a [Uint8List].
@@ -179,7 +178,7 @@ void _readToFile(ZipHandle handle, String name, File file) {
   malloc.free(nativePath);
   zipEntryClose(handle);
 
-  if (freadResult != 0) {
+  if (freadResult < 0) {
     throw ZipException('Cannot write "$name" to file "${file.path}');
   }
 }
@@ -193,22 +192,23 @@ Uint8List _read(ZipHandle handle, String name) {
     throw ZipException('Entry "$name" not found');
   }
 
-  final dataPointer = malloc<DataPointer>();
-  final sizePointer = malloc<Int32>();
+  final size = zipEntrySize(handle);
+  final dataPointer = malloc<Uint8>(size);
 
-  final bytesRead = zipEntryRead(handle, dataPointer, sizePointer);
-  final realDataAddress = dataPointer.value.address;
-  malloc.free(dataPointer);
-  malloc.free(sizePointer);
-
-  if (bytesRead >= 0 && realDataAddress != 0) {
-    final realDataPointer = Pointer<Uint8>.fromAddress(dataPointer.value.address);
-    final data = realDataPointer.asTypedList(sizePointer.value);
-    malloc.free(realDataPointer);
-    return data;
+  final bytesRead = zipEntryNoAllocRead(handle, dataPointer, size);
+  if (bytesRead < 0) {
+    malloc.free(dataPointer);
+    zipEntryClose(handle);
+    ZipException('Cannot read data from "$name"');
   }
 
-  throw ZipException('Cannot read data from "$name"');
+  final data = Uint8List(bytesRead);
+  data.setAll(0, dataPointer.asTypedList(bytesRead));
+
+  malloc.free(dataPointer);
+  zipEntryClose(handle);
+
+  return data;
 }
 
 ZipHandle _checkOpened(ZipHandle? handle) {
