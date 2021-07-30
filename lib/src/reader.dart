@@ -89,7 +89,6 @@ class ZipFileReaderAsync {
     ZipHandle? handle;
     await for (final message in receivePort) {
       if (message is IsolateRequest) {
-        print('Request received: ${message.id} of type ${message.type}');
         try {
           if (message.type == _RequestType.open) {
             if (handle != null) {

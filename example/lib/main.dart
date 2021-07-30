@@ -38,7 +38,7 @@ class _MyAppState extends State<MyApp> {
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 10),
-                child: Text('Take not of logging output in the console'),
+                child: Text('Take note of logging output in the console'),
               ),
             ],
           ),

@@ -32,7 +32,7 @@ typedef ZipSetLevel = int Function(ZipHandle, int);
 final zipSetLevel = zipLib.lookupFunction<ZipSetLevelNative, ZipSetLevel>('zip_set_level');
 
 // extern ZIP_EXPORT ssize_t zip_entries_total(struct zip_t *zip);
-typedef ZipEntriesTotalNative = Int64 Function(ZipHandle);
+typedef ZipEntriesTotalNative = Int32 Function(ZipHandle);
 typedef ZipEntriesTotal = int Function(ZipHandle);
 
 final zipEntriesTotal = zipLib.lookupFunction<ZipEntriesTotalNative, ZipEntriesTotal>('zip_entries_total');

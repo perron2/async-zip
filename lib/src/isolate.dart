@@ -38,7 +38,6 @@ class IsolateManager<T> {
         if (completer != null) {
           _requests.remove(message.id);
           if (message.error != null) {
-            debugPrint('Response for ${message.id} with error=${message.error}');
             completer.completeError(ZipException(message.error!));
           } else {
             completer.complete(message.param);
