@@ -24,6 +24,8 @@ file when working with `ZipFileWriter(Async)`.
 ### Reading data synchronously
 
 ```dart
+import 'package:async_zip/async_zip.dart';
+
 final reader = ZipFileReader();
 try {
   reader.open(File('path-to-archive.zip'));
@@ -50,6 +52,8 @@ try {
 ### Reading data asynchronously
 
 ```dart
+import 'package:async_zip/async_zip.dart';
+
 final reader = ZipFileReaderAsync();
 try {
   reader.open(File('path-to-archive.zip'));
@@ -78,6 +82,8 @@ try {
 ### Writing data synchronously
 
 ```dart
+import 'package:async_zip/async_zip.dart';
+
 final reader = ZipFileWriter();
 try {
   reader.create(File('path-to-archive.zip'));
@@ -99,6 +105,8 @@ try {
 ### Write data asynchronously
 
 ```dart
+import 'package:async_zip/async_zip.dart';
+
 final reader = ZipFileWriter();
 try {
   await reader.create(File('path-to-archive.zip'));
