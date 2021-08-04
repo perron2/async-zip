@@ -73,7 +73,8 @@ class ZipFileWriterAsync {
   /// compression).
   ///
   /// Throws a [ZipException] if the file cannot be created.
-  Future<void> create(File file, {int compressionLevel = kDefaultCompressionLevel}) =>
+  Future<void> create(File file,
+          {int compressionLevel = kDefaultCompressionLevel}) =>
       _manager.sendRequest<void>(_RequestType.create, [file, compressionLevel]);
 
   /// Closes the writer. After closing no further write operations are
@@ -89,7 +90,8 @@ class ZipFileWriterAsync {
   ///
   /// Throws a [ZipException] if the operation fails.
   Future<void> writeFile(String name, File file, {bool compress = true}) =>
-      _manager.sendRequest<void>(_RequestType.writeFile, [name, file, compress]);
+      _manager
+          .sendRequest<void>(_RequestType.writeFile, [name, file, compress]);
 
   /// Writes the specified data as a Zip archive entry [name].
   ///
@@ -99,7 +101,8 @@ class ZipFileWriterAsync {
   ///
   /// Throws a [ZipException] if the operation fails.
   Future<void> writeData(String name, Uint8List data, {bool compress = true}) =>
-      _manager.sendRequest<void>(_RequestType.writeData, [name, data, compress]);
+      _manager
+          .sendRequest<void>(_RequestType.writeData, [name, data, compress]);
 
   static void _zipWorker(SendPort sendPort) async {
     final receivePort = ReceivePort();
@@ -111,7 +114,8 @@ class ZipFileWriterAsync {
         try {
           if (message.type == _RequestType.create) {
             if (handle != null) {
-              throw ZipException('ZipFileWriter already created; call close() first');
+              throw ZipException(
+                  'ZipFileWriter already created; call close() first');
             }
             final args = message.param as List<dynamic>;
             final file = args[0] as File;
@@ -213,7 +217,8 @@ void _writeData(ZipHandle handle, String name, Uint8List data, bool compress) {
     malloc.free(bufferPointer);
 
     if (writeResult != 0) {
-      throw ZipException('Cannot write file ${data.length} bytes of data to entry "$name"');
+      throw ZipException(
+          'Cannot write file ${data.length} bytes of data to entry "$name"');
     }
 
     zipEntryClose(handle);

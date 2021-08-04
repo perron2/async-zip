@@ -43,7 +43,8 @@ class ZipFileReader {
   /// to [file].
   ///
   /// Throws a [ZipException] if the operation fails.
-  void readToFile(String name, File file) => _readToFile(_checkOpened(_handle), name, file);
+  void readToFile(String name, File file) =>
+      _readToFile(_checkOpened(_handle), name, file);
 
   /// Reads the entry specified by [name] and returns the unpached data
   /// as a [Uint8List].
@@ -59,7 +60,8 @@ class ZipFileReaderAsync {
   /// Opens the specified Zip archive for read access.
   ///
   /// Throws a [ZipException] if the file cannot be opened.
-  Future<void> open(File file) => _manager.sendRequest<void>(_RequestType.open, file);
+  Future<void> open(File file) =>
+      _manager.sendRequest<void>(_RequestType.open, file);
 
   /// Closes the reader. After closing no further read operations are
   /// allowed. You can however [open] the reader again using a new file.
@@ -68,19 +70,22 @@ class ZipFileReaderAsync {
   /// Returns a list of all items contained in the Zip archive.
   ///
   /// Throws a [ZipException] if the operation fails.
-  Future<List<ZipEntry>> entries() => _manager.sendRequest<List<ZipEntry>>(_RequestType.entries);
+  Future<List<ZipEntry>> entries() =>
+      _manager.sendRequest<List<ZipEntry>>(_RequestType.entries);
 
   /// Reads the entry specified by [name] and writes the unpacked data
   /// to [file].
   ///
   /// Throws a [ZipException] if the operation fails.
-  Future<void> readToFile(String name, File file) => _manager.sendRequest<void>(_RequestType.readToFile, [name, file]);
+  Future<void> readToFile(String name, File file) =>
+      _manager.sendRequest<void>(_RequestType.readToFile, [name, file]);
 
   /// Reads the entry specified by [name] and returns the unpached data
   /// as a [Uint8List].
   ///
   /// Throws a [ZipException] if the operation fails.
-  Future<Uint8List> read(String name) => _manager.sendRequest<Uint8List>(_RequestType.read, name);
+  Future<Uint8List> read(String name) =>
+      _manager.sendRequest<Uint8List>(_RequestType.read, name);
 
   static void _zipWorker(SendPort sendPort) async {
     final receivePort = ReceivePort();
@@ -92,7 +97,8 @@ class ZipFileReaderAsync {
         try {
           if (message.type == _RequestType.open) {
             if (handle != null) {
-              throw ZipException('ZipFileReader already opened; call close() first');
+              throw ZipException(
+                  'ZipFileReader already opened; call close() first');
             }
             final file = message.param as File;
             handle = _open(file);
