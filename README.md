@@ -107,7 +107,7 @@ try {
 ```dart
 import 'package:async_zip/async_zip.dart';
 
-final reader = ZipFileWriter();
+final reader = ZipFileWriterAsync();
 try {
   await reader.create(File('path-to-archive.zip'));
 
