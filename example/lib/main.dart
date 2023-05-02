@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:async_zip/async_zip.dart';
 import 'package:flutter/material.dart';
@@ -92,7 +91,7 @@ class _MyAppState extends State<MyApp> {
       final jsonData = await asyncReader.read('data/person.json');
       print(utf8.decode(jsonData));
     } on ZipException catch (ex) {
-      print('An error ocurred while reading from the Zip file: ${ex.message}');
+      print('An error occurred while reading from the Zip file: ${ex.message}');
     } finally {
       await asyncReader.close();
     }
@@ -120,7 +119,7 @@ class _MyAppState extends State<MyApp> {
       final textData = await rootBundle.loadString('assets/fox.txt');
       writer.writeData('fox.txt', Uint8List.fromList(utf8.encode(textData)));
     } on ZipException catch (ex) {
-      print('An error ocurred while creating the Zip file: ${ex.message}');
+      print('An error occurred while creating the Zip file: ${ex.message}');
     } finally {
       writer.close();
     }
@@ -139,7 +138,7 @@ class _MyAppState extends State<MyApp> {
       final textData = await rootBundle.loadString('assets/fox.txt');
       await asyncWriter.writeData('fox.txt', Uint8List.fromList(utf8.encode(textData)));
     } on ZipException catch (ex) {
-      print('An error ocurred while creating the Zip file: ${ex.message}');
+      print('An error occurred while creating the Zip file: ${ex.message}');
     } finally {
       await asyncWriter.close();
     }

@@ -1,3 +1,5 @@
+Function(String)? debugPrint;
+
 /// Describes a Zip archive item.
 class ZipEntry {
   /// The name of the entry.

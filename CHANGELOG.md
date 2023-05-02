@@ -1,3 +1,11 @@
+## 0.0.3
+
+- Remove unnecessary imports in order to satisfy static analyzer.
+- Update dependencies
+- Fix async example in README.md and use ZipFileWriterAsync instead of ZipFileWriter
+  (thank you ioridev) 
+- Migrate Android code to SDK and API 33
+
 ## 0.0.2
 
 - Reformat source files with a line length of 80 characters and increase the

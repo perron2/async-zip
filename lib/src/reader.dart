@@ -5,7 +5,6 @@ import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
-import 'package:flutter/foundation.dart';
 
 import 'common.dart';
 import 'isolate.dart';
@@ -129,7 +128,7 @@ class ZipFileReaderAsync {
         }
       }
     }
-    debugPrint('ZipFileReaderAsync isolate stopped');
+    debugPrint?.call('ZipFileReaderAsync isolate stopped');
   }
 }
 

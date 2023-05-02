@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:isolate';
 
-import 'package:flutter/foundation.dart';
-
 import '../async_zip.dart';
 
 typedef IsolateWorker = void Function(SendPort sendPort);
@@ -45,7 +43,7 @@ class IsolateManager<T> {
         }
       }
     }
-    debugPrint('Stopped listening for messages');
+    debugPrint?.call('Stopped listening for messages');
   }
 }
 
