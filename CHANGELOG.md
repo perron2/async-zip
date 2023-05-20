@@ -1,3 +1,10 @@
+## 0.0.4
+
+- Update C library to version 0.2.6
+- Change behavior of C library for Zip entries without a timestamp. Instead of
+  interpreting the zero timestamp value as 1979-11-30 00:00:00 the current
+  timestamp used.
+
 ## 0.0.3
 
 - Remove unnecessary imports in order to satisfy static analyzer.

@@ -1,10 +1,10 @@
 name: async_zip
 description: A Flutter plugin to asynchronously read and write Zip files.
-version: 0.0.3
+version: 0.0.4
 homepage: https://github.com/perron2/async-zip
 
 environment:
-  sdk: '>=2.19.6 <3.0.0'
+  sdk: ^3.0.0
   flutter: '>=1.20.0'
 
 dependencies:
