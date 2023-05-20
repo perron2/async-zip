@@ -35,6 +35,10 @@ class _MyAppState extends State<MyApp> {
                 child: Text('Read Zip file'),
                 onPressed: () => _readZipFile(),
               ),
+              ElevatedButton(
+                child: Text('Extract Zip file'),
+                onPressed: () => _extractZipFile(),
+              ),
               Padding(
                 padding: const EdgeInsets.only(top: 10),
                 child: Text('Take note of logging output in the console'),
@@ -55,7 +59,7 @@ class _MyAppState extends State<MyApp> {
     await archiveFile.writeAsBytes(archiveData.buffer.asUint8List());
 
     // Read the Zip file synchronously
-    final reader = ZipFileReader();
+    final reader = ZipFileReaderSync();
     print('Reading synchronously from Zip file ${archiveFile.path}');
     try {
       reader.open(archiveFile);
@@ -76,7 +80,7 @@ class _MyAppState extends State<MyApp> {
     }
 
     // Read the Zip file asynchronously
-    final asyncReader = ZipFileReaderAsync();
+    final asyncReader = ZipFileReader();
     print('Reading asynchronously from Zip file ${archiveFile.path}');
     try {
       await asyncReader.open(archiveFile);
@@ -110,7 +114,7 @@ class _MyAppState extends State<MyApp> {
     await jsonFile.writeAsBytes(jsonData.buffer.asUint8List());
 
     // Create the Zip file synchronously
-    final writer = ZipFileWriter();
+    final writer = ZipFileWriterSync();
     try {
       writer.create(archiveFile);
       writer.writeFile('butterfly.jpg', butterflyFile);
@@ -129,7 +133,7 @@ class _MyAppState extends State<MyApp> {
 
     // Create the Zip file asynchronously
     final asyncArchiveFile = File(path.join(tempDir.path, 'create-archive-async.zip'));
-    final asyncWriter = ZipFileWriterAsync();
+    final asyncWriter = ZipFileWriter();
     try {
       await asyncWriter.create(asyncArchiveFile);
       await asyncWriter.writeFile('butterfly.jpg', butterflyFile);
@@ -145,5 +149,27 @@ class _MyAppState extends State<MyApp> {
 
     final asyncArchiveSize = asyncArchiveFile.lengthSync();
     print('Created Zip file at ${asyncArchiveFile.path} with a size of $asyncArchiveSize bytes');
+  }
+
+  void _extractZipFile() async {
+    final tempDir = Directory.systemTemp;
+    final archiveData = await rootBundle.load('assets/archive.zip');
+    final archiveFile = File(path.join(tempDir.path, 'archive.zip'));
+    await archiveFile.writeAsBytes(archiveData.buffer.asUint8List());
+    final extractTo = Directory(path.join(tempDir.path, 'zip-content'));
+
+    var copied = 0;
+    var percentage = 0;
+
+    print('Extracting archive ${archiveFile.path} to directory ${extractTo.path}');
+    await extractZipArchive(archiveFile, extractTo, callback: (entry, totalEntries) {
+      copied++;
+      final newPercentage = (copied * 100 / totalEntries).round();
+      if (newPercentage != percentage) {
+        percentage = newPercentage;
+        print('$percentage%');
+      }
+    });
+    print('Extraction completed');
   }
 }

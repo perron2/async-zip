@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:isolate';
 
-import '../async_zip.dart';
+import 'common.dart';
 
 typedef IsolateWorker = void Function(SendPort sendPort);
 
@@ -43,7 +43,7 @@ class IsolateManager<T> {
         }
       }
     }
-    debugPrint?.call('Stopped listening for messages');
+    asyncZipDebugPrint?.call('Stopped listening for messages');
   }
 }
 

@@ -1,4 +1,4 @@
-Function(String)? debugPrint;
+Function(String)? asyncZipDebugPrint;
 
 /// Describes a Zip archive item.
 class ZipEntry {

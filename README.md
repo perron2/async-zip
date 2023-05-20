@@ -2,8 +2,8 @@
 
 ![Pub Version](https://img.shields.io/pub/v/async_zip)
 
-This package allows reading and writing Zip archives asynchronously and with
-low memory consumption.
+This package allows fast reading and writing Zip archives asynchronously and
+with low memory consumption.
 
 There is already a [standard archive library](https://pub.dev/packages/archive)
 for Dart. But the standard library has two major issues:
@@ -16,8 +16,7 @@ Synchronous access may be faster in some situations. Choose whatever you need.
 
 Make sure to call `close()` in any case after having worked with a Zip file.
 You are leaking resources otherwise or risk ending up with an unfinished Zip
-file when working with `ZipFileWriter(Async)`.
-
+file when working with `ZipFileWriter` and `ZipFileWriterSync`.
 
 ## Reading Zip files
 
@@ -26,7 +25,7 @@ file when working with `ZipFileWriter(Async)`.
 ```dart
 import 'package:async_zip/async_zip.dart';
 
-final reader = ZipFileReader();
+final reader = ZipFileReaderSync();
 try {
   reader.open(File('path-to-archive.zip'));
   
@@ -54,7 +53,7 @@ try {
 ```dart
 import 'package:async_zip/async_zip.dart';
 
-final reader = ZipFileReaderAsync();
+final reader = ZipFileReader();
 try {
   reader.open(File('path-to-archive.zip'));
   
@@ -84,7 +83,7 @@ try {
 ```dart
 import 'package:async_zip/async_zip.dart';
 
-final reader = ZipFileWriter();
+final reader = ZipFileWriterSync();
 try {
   reader.create(File('path-to-archive.zip'));
 
@@ -92,7 +91,7 @@ try {
   reader.writeFile('image.jpg', File('/somewhere/on/disk/image.jpg'));
 
   // Write Uint8List data to the Zip file
-  Uint8List data = ...; // some binary data
+  Uint8List data = …; // some binary data
   reader.writeData('data.txt', data);
 
 } on ZipException catch (ex) {
@@ -107,7 +106,7 @@ try {
 ```dart
 import 'package:async_zip/async_zip.dart';
 
-final reader = ZipFileWriterAsync();
+final reader = ZipFileWriter();
 try {
   await reader.create(File('path-to-archive.zip'));
 
@@ -115,7 +114,7 @@ try {
   await reader.writeFile('image.jpg', File('/somewhere/on/disk/image.jpg'));
 
   // Write Uint8List data to the Zip file
-  Uint8List data = ...; // some binary data
+  Uint8List data = …; // some binary data
   await reader.writeData('data.txt', data);
 
 } on ZipException catch (ex) {
@@ -125,10 +124,35 @@ try {
 }
 ```
 
+## Extract a Zip archive to a folder
+
+Two functions allow extraction of a Zip archive to a folder.
+`extractZipArchive()` works asynchronously, `extractZipArchiveSync()` works
+synchronously. Both can take an optional callback parameter that is called
+once for every extracted file (after the file has been copied to the folder).
+
+```dart
+import 'package:async_zip/async_zip.dart';
+
+final archive = File(…);
+final extractTo = Directory(…);
+var copied = 0;
+var percentage = 0;
+await extractZipArchive(archive, extractTo, callback: (entry, totalEntries) {
+  copied++;
+  final newPercentage = (copied * 100 / totalEntries).round();
+  if (newPercentage != percentage) {
+    percentage = newPercentage;
+    print('$percentage%');
+  }
+});
+
+```
+
 ## Internals
 
 This package uses the following C library for reading and writing:  
-https://github.com/kuba--/zip
+<https://github.com/kuba--/zip>
 
 The library is integrated using Dart's
 [foreign function interface](https://dart.dev/guides/libraries/c-interop) (FFI).

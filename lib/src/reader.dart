@@ -5,13 +5,73 @@ import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
+import 'package:path/path.dart' as path;
 
 import 'common.dart';
 import 'isolate.dart';
 import 'zip.dart';
 
+/// Extracts a Zip archive into the specified directory.
+///
+/// if the optional [callback] is specified, it will be called for every
+/// extracted file after the extraction has been completed.
+void extractZipArchiveSync(File archive, Directory dir, {void Function(ZipEntry entry, int totalEntries)? callback}) {
+  if (callback == null) {
+    final archivePath = archive.path.toNativeUtf8();
+    final dirPath = dir.path.toNativeUtf8();
+    try {
+      zipExtract(archivePath, dirPath, nullptr, nullptr);
+    } finally {
+      malloc.free(archivePath);
+      malloc.free(dirPath);
+    }
+    return;
+  }
+
+  final reader = ZipFileReaderSync();
+  reader.open(archive);
+  final entries = reader.entries();
+  for (final entry in entries) {
+    if (entry.isDir) {
+      Directory(path.join(dir.path, entry.name)).createSync(recursive: true);
+    } else {
+      final filePath = path.join(dir.path, entry.name);
+      final fileDir = Directory(path.dirname(filePath));
+      fileDir.createSync(recursive: true);
+      reader.readToFile(entry.name, File(filePath));
+    }
+    callback.call(entry, entries.length);
+  }
+  reader.close();
+}
+
+/// Asynchronously extracts a Zip archive into the specified directory.
+///
+/// if the optional [callback] is specified, it will be called for every
+/// extracted file after the extraction has been completed.
+Future<void> extractZipArchive(File archive, Directory dir,
+    {void Function(ZipEntry entry, int totalEntries)? callback}) async {
+  final receivePort = ReceivePort();
+  final sendPort = receivePort.sendPort;
+  Isolate.spawn((args) {
+    extractZipArchiveSync(archive, dir, callback: (entry, totalEntries) {
+      sendPort.send((entry, totalEntries));
+    });
+    sendPort.send(null);
+  }, null);
+  await for (final message in receivePort) {
+    switch (message) {
+      case (ZipEntry entry, int totalEntries):
+        callback?.call(entry, totalEntries);
+      default:
+        receivePort.close();
+        break;
+    }
+  }
+}
+
 /// Reads data from a Zip archive.
-class ZipFileReader {
+class ZipFileReaderSync {
   ZipHandle? _handle;
 
   /// Opens the specified Zip archive for read access.
@@ -42,8 +102,7 @@ class ZipFileReader {
   /// to [file].
   ///
   /// Throws a [ZipException] if the operation fails.
-  void readToFile(String name, File file) =>
-      _readToFile(_checkOpened(_handle), name, file);
+  void readToFile(String name, File file) => _readToFile(_checkOpened(_handle), name, file);
 
   /// Reads the entry specified by [name] and returns the unpached data
   /// as a [Uint8List].
@@ -53,14 +112,13 @@ class ZipFileReader {
 }
 
 /// Reads data from a Zip archive asynchronously.
-class ZipFileReaderAsync {
+class ZipFileReader {
   final _manager = IsolateManager<_RequestType>(_zipWorker);
 
   /// Opens the specified Zip archive for read access.
   ///
   /// Throws a [ZipException] if the file cannot be opened.
-  Future<void> open(File file) =>
-      _manager.sendRequest<void>(_RequestType.open, file);
+  Future<void> open(File file) => _manager.sendRequest<void>(_RequestType.open, file);
 
   /// Closes the reader. After closing no further read operations are
   /// allowed. You can however [open] the reader again using a new file.
@@ -69,22 +127,19 @@ class ZipFileReaderAsync {
   /// Returns a list of all items contained in the Zip archive.
   ///
   /// Throws a [ZipException] if the operation fails.
-  Future<List<ZipEntry>> entries() =>
-      _manager.sendRequest<List<ZipEntry>>(_RequestType.entries);
+  Future<List<ZipEntry>> entries() => _manager.sendRequest<List<ZipEntry>>(_RequestType.entries);
 
   /// Reads the entry specified by [name] and writes the unpacked data
   /// to [file].
   ///
   /// Throws a [ZipException] if the operation fails.
-  Future<void> readToFile(String name, File file) =>
-      _manager.sendRequest<void>(_RequestType.readToFile, [name, file]);
+  Future<void> readToFile(String name, File file) => _manager.sendRequest<void>(_RequestType.readToFile, [name, file]);
 
-  /// Reads the entry specified by [name] and returns the unpached data
+  /// Reads the entry specified by [name] and returns the unpacked data
   /// as a [Uint8List].
   ///
   /// Throws a [ZipException] if the operation fails.
-  Future<Uint8List> read(String name) =>
-      _manager.sendRequest<Uint8List>(_RequestType.read, name);
+  Future<Uint8List> read(String name) => _manager.sendRequest<Uint8List>(_RequestType.read, name);
 
   static void _zipWorker(SendPort sendPort) async {
     final receivePort = ReceivePort();
@@ -96,8 +151,7 @@ class ZipFileReaderAsync {
         try {
           if (message.type == _RequestType.open) {
             if (handle != null) {
-              throw ZipException(
-                  'ZipFileReader already opened; call close() first');
+              throw ZipException('ZipFileReader already opened; call close() first');
             }
             final file = message.param as File;
             handle = _open(file);
@@ -128,7 +182,7 @@ class ZipFileReaderAsync {
         }
       }
     }
-    debugPrint?.call('ZipFileReaderAsync isolate stopped');
+    asyncZipDebugPrint?.call('ZipFileReaderAsync isolate stopped');
   }
 }
 
